@@ -7,17 +7,51 @@ function expressionCalculator(expr) {
     
     expr = expr.replace(/\s/g, '');//delete spaces
 
-    if (expr.indexOf('(') === -1 && expr.indexOf(')') === -1){
+    if (expr.indexOf('(') === -1 && expr.indexOf(')') === -1){//no parentheses
         return +calculateSimpleExpression(expr);
-    } else {
-        return 0;
-        //check if expression has correct brackets
-        
-        //в цикле - ищем вложенности скобок (...) и считаем выражения внутри, заменяем в строке (...) на число и начинаем сначала до 
-        // того, как скобок не останется 
-    }
+    } else {//with parentheses
+        if ( ! isBracketsCorrect(expr)){//check if expression has correct brackets
+            throw new Error("ExpressionError: Brackets must be paired");
+        } else {
+            while(expr.indexOf('(') !== -1){
+                let begin, end;
+                for (let i = 0; i < expr.length; i++) {
+                    if (expr[i] === "("){
+                        begin = i;
+                    } else if(expr[i] === ")"){
+                        end = i;
+                        break;
+                    }
+                }
+                if (begin === 0 && end === expr.length - 1){
+                    expr = calculateSimpleExpression(expr.substring(begin + 1, end));
+                } else if (begin === 0) {
+                    expr = calculateSimpleExpression(expr.substring(begin + 1, end)) + expr.substring(end + 1);
+                } else if (end === expr.length - 1){
+                    let calculatedSimpleExpr = calculateSimpleExpression(expr.substring(begin + 1, end));
+                    if (calculatedSimpleExpr[0] === "-" && expr[begin - 1] === "+") {
+                        expr = expr.substring(0, begin - 1) + calculatedSimpleExpr;// -+ => -
+                    } else if (calculatedSimpleExpr[0] === "-" && expr[begin - 1] === "-"){
+                        expr = expr.substring(0, begin - 1) + "+" + calculatedSimpleExpr.substring(1);// -- => +
+                    } else {
+                        expr = expr.substring(0, begin) + calculatedSimpleExpr;
+                    }
+                } else {
+                    let calculatedSimpleExpr = calculateSimpleExpression(expr.substring(begin + 1, end));
+                    if (calculatedSimpleExpr[0] === "-" && expr[begin - 1] === "+") {
+                        expr = expr.substring(0, begin - 1) + calculatedSimpleExpr + expr.substring(end + 1);// -+ => -
+                    } else if (calculatedSimpleExpr[0] === "-" && expr[begin - 1] === "-"){
+                        expr = expr.substring(0, begin - 1) + "+" + calculatedSimpleExpr.substring(1) + expr.substring(end + 1);// -- => +
+                    } else {
+                        expr = expr.substring(0, begin) + calculatedSimpleExpr + expr.substring(end + 1);
+                    }
+                }
+            }
 
-    
+            expr = calculateSimpleExpression(expr);//expr without brackets
+            return +expr;
+        }
+    }  
 }
 
 //calculates expression without parenthesis
@@ -89,6 +123,10 @@ let makeOperation = (str, operationSign, operatorPosition) => {
     //get second operand
     i = operatorPosition + 1;
     while(i < str.length){
+        if(str[i] === '-' && i === (operatorPosition + 1)){
+            secondOperand += str[i];
+            strCutEnd = i;
+        }
         if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
         // if(str[i] !== " "){
             secondOperand += str[i];
@@ -114,6 +152,26 @@ let makeOperation = (str, operationSign, operatorPosition) => {
 
     return str.substring(0, strCutBegin) + String(operationResult) + str.substring(strCutEnd + 1);
 }
+
+let isBracketsCorrect = (expr) => {
+    let stack = [];
+
+    for (let j = 0; j < expr.length; j++) {
+        let elem = expr[j];
+
+        if (elem === '('){
+            stack.push(elem);
+        } else if (elem === ")"){
+            if (stack[stack.length - 1] === "("){
+                stack.pop();
+            } else {
+                return false;
+            }
+        }
+    }
+
+    return stack.length === 0;
+};
 
 module.exports = {
     expressionCalculator
