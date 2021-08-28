@@ -22,11 +22,13 @@ function expressionCalculator(expr) {
 
 //calculates expression without parenthesis
 let calculateSimpleExpression = (simpleStr) => {
-    let indexMult, indexDev, indexSubtr, indexAdd;
-    indexAdd = simpleStr.indexOf("+");
+    
+    let indexMult = simpleStr.indexOf('*');
+    let indexDev = simpleStr.indexOf('/');
+    let indexSubtr = simpleStr.indexOf('-', 1);
+    let indexAdd = simpleStr.indexOf("+");
 
-    while ((indexMult = simpleStr.indexOf('*')) > -1 || (indexDev = simpleStr.indexOf('/')) > -1 ||
-        (indexSubtr = simpleStr.indexOf('-', 1)) > -1 || indexAdd > -1){
+    while (indexMult > -1 || indexDev > -1 || indexSubtr > -1 || indexAdd > -1){
         
             if (indexMult > -1 && indexDev > -1){
                 if (indexMult < indexDev){
@@ -52,7 +54,7 @@ let calculateSimpleExpression = (simpleStr) => {
 
             indexMult = simpleStr.indexOf('*');
             indexDev = simpleStr.indexOf('/');
-            indexSubtr = simpleStr.indexOf('-');
+            indexSubtr = simpleStr.indexOf('-', 1);
             indexAdd = simpleStr.indexOf('+');
     }
 
@@ -69,7 +71,6 @@ let makeOperation = (str, operationSign, operatorPosition) => {
 
     //get first operand
     let i = operatorPosition - 1;
-    if (operationSign === "-"){
         while(i > -1){
             if (str[i] === '-' && i === 0){
                 strCutBegin = 0;
@@ -83,17 +84,6 @@ let makeOperation = (str, operationSign, operatorPosition) => {
             }
             i--;
         }
-    } else {
-        while(i > -1){
-            if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
-            // if (str[i] !== ' '){
-                strCutBegin = i;
-            } else {
-                break;
-            }
-            i--;
-        }
-    }
     firstOperand = str.substring(strCutBegin, operatorPosition);
     
     //get second operand
@@ -111,7 +101,10 @@ let makeOperation = (str, operationSign, operatorPosition) => {
 
     if (operationSign === "*") operationResult = +firstOperand * +secondOperand;
     //TODO: devision by 0 situation
-    if (operationSign === "/") operationResult = +firstOperand / +secondOperand;
+    if (operationSign === "/"){
+        if (+secondOperand === 0) throw new Error("TypeError: Division by zero.");
+        operationResult = +firstOperand / +secondOperand;
+    } 
     if (operationSign === "+") operationResult = +firstOperand + +secondOperand;
     if (operationSign === "-") operationResult = +firstOperand - +secondOperand;
 
