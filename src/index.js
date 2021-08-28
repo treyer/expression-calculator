@@ -8,8 +8,9 @@ function expressionCalculator(expr) {
     expr = expr.replace(/\s/g, '');//delete spaces
 
     if (expr.indexOf('(') === -1 && expr.indexOf(')') === -1){
-        return calculateSimpleExpression(expr);
+        return +calculateSimpleExpression(expr);
     } else {
+        return 0;
         //check if expression has correct brackets
         
         //в цикле - ищем вложенности скобок (...) и считаем выражения внутри, заменяем в строке (...) на число и начинаем сначала до 
@@ -21,38 +22,38 @@ function expressionCalculator(expr) {
 
 //calculates expression without parenthesis
 let calculateSimpleExpression = (simpleStr) => {
-
     let indexMult, indexDev, indexSubtr, indexAdd;
+    indexAdd = simpleStr.indexOf("+");
 
     while ((indexMult = simpleStr.indexOf('*')) > -1 || (indexDev = simpleStr.indexOf('/')) > -1 ||
-            (indexSubtr = simpleStr.indexOf('-')) > -1 || (indexAdd = simpleStr.indexOf('+')) > -1){
-        if (indexMult > -1 && indexDev > -1){
-            if (indexMult < indexDev){
+        (indexSubtr = simpleStr.indexOf('-', 1)) > -1 || indexAdd > -1){
+        
+            if (indexMult > -1 && indexDev > -1){
+                if (indexMult < indexDev){
+                    simpleStr = makeOperation(simpleStr, "*", indexMult);
+                } else {
+                    simpleStr = makeOperation(simpleStr, "/", indexDev);
+                }
+            } else if (indexMult > -1){
                 simpleStr = makeOperation(simpleStr, "*", indexMult);
-            } else {
+            } else if (indexDev > -1) {
                 simpleStr = makeOperation(simpleStr, "/", indexDev);
-            }
-        } else if (indexMult > -1){
-            simpleStr = makeOperation(simpleStr, "*", indexMult);
-        } else if (indexDev > -1) {
-            simpleStr = makeOperation(simpleStr, "/", indexDev);
-        } else if (indexSubtr > -1 && indexAdd > -1){
-            if (indexSubtr < indexAdd){
+            } else if (indexSubtr > -1 && indexAdd > -1){
+                if (indexSubtr < indexAdd){
+                    simpleStr = makeOperation(simpleStr, "-", indexSubtr);
+                } else {
+                    simpleStr = makeOperation(simpleStr, "+", indexAdd);
+                }
+            } else if (indexSubtr > -1){
                 simpleStr = makeOperation(simpleStr, "-", indexSubtr);
-            } else {
+            } else if (indexAdd > -1){
                 simpleStr = makeOperation(simpleStr, "+", indexAdd);
-                console.log(simpleStr);
             }
-        } else if (indexSubtr > -1){
-            simpleStr = makeOperation(simpleStr, "-", indexSubtr);
-        } else if (indexAdd > -1){
-            simpleStr = makeOperation(simpleStr, "+", indexAdd);
-        }
 
-        indexMult = simpleStr.indexOf('*');
-        indexDev = simpleStr.indexOf('/');
-        indexSubtr = simpleStr.indexOf('-');
-        indexAdd = simpleStr.indexOf('+');
+            indexMult = simpleStr.indexOf('*');
+            indexDev = simpleStr.indexOf('/');
+            indexSubtr = simpleStr.indexOf('-');
+            indexAdd = simpleStr.indexOf('+');
     }
 
     return simpleStr;
@@ -68,13 +69,30 @@ let makeOperation = (str, operationSign, operatorPosition) => {
 
     //get first operand
     let i = operatorPosition - 1;
-    while(i > -1){
-        if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
-            strCutBegin = i;
-        } else {
-            break;
+    if (operationSign === "-"){
+        while(i > -1){
+            if (str[i] === '-' && i === 0){
+                strCutBegin = 0;
+                break;
+            } 
+            if ((str[i] !== '*' && str[i] !== '/' && str[i] !== '+') && str[i] !== '-'){
+            // if (str[i] !== ' '){
+                strCutBegin = i;
+            } else {
+                break;
+            }
+            i--;
         }
-        i--;
+    } else {
+        while(i > -1){
+            if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
+            // if (str[i] !== ' '){
+                strCutBegin = i;
+            } else {
+                break;
+            }
+            i--;
+        }
     }
     firstOperand = str.substring(strCutBegin, operatorPosition);
     
@@ -82,6 +100,7 @@ let makeOperation = (str, operationSign, operatorPosition) => {
     i = operatorPosition + 1;
     while(i < str.length){
         if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
+        // if(str[i] !== " "){
             secondOperand += str[i];
             strCutEnd = i;
         } else {
