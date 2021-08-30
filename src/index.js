@@ -126,8 +126,7 @@ let makeOperation = (str, operationSign, operatorPosition) => {
         if(str[i] === '-' && i === (operatorPosition + 1)){
             secondOperand += str[i];
             strCutEnd = i;
-        }
-        if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
+        } else if (str[i] !== '*' && str[i] !== '/' && str[i] !== '+' && str[i] !== '-'){
         // if(str[i] !== " "){
             secondOperand += str[i];
             strCutEnd = i;
@@ -138,7 +137,6 @@ let makeOperation = (str, operationSign, operatorPosition) => {
     }
 
     if (operationSign === "*") operationResult = +firstOperand * +secondOperand;
-    //TODO: devision by 0 situation
     if (operationSign === "/"){
         if (+secondOperand === 0) throw new Error("TypeError: Division by zero.");
         operationResult = +firstOperand / +secondOperand;
