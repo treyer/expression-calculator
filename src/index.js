@@ -49,6 +49,14 @@ function expressionCalculator(expr) {
             }
 
             expr = calculateSimpleExpression(expr);//expr without brackets
+
+            //if result is encripted exponenta - decipher it
+            let eIndex;
+            if (expr.indexOf("ex") > 0){
+               eIndex = expr.indexOf("ex");
+               expr = expr.substr(0, eIndex + 1) + "-" + expr.substr(eIndex + 2);
+            }            
+
             return +expr;
         }
     }  
@@ -136,6 +144,21 @@ let makeOperation = (str, operationSign, operatorPosition) => {
         i++;
     }
 
+    //decipher the exponent with a minus: "ex" to "e-"
+    let eIndex;
+    if (firstOperand.indexOf("ex") > 0){
+        console.log("here");
+        eIndex = firstOperand.indexOf("ex");
+        firstOperand = firstOperand.substr(0, eIndex + 1) + "-" + firstOperand.substr(eIndex + 2);
+     }
+
+     if (secondOperand.indexOf("ex") > 0){
+        console.log("here");
+        eIndex = secondOperand.indexOf("ex");
+        secondOperand = secondOperand.substr(0, eIndex + 1) + "-" + secondOperand.substr(eIndex + 2);
+     }         
+    
+
     if (operationSign === "*") operationResult = +firstOperand * +secondOperand;
     if (operationSign === "/"){
         if (+secondOperand === 0) throw new Error("TypeError: Division by zero.");
@@ -144,11 +167,23 @@ let makeOperation = (str, operationSign, operatorPosition) => {
     if (operationSign === "+") operationResult = +firstOperand + +secondOperand;
     if (operationSign === "-") operationResult = +firstOperand - +secondOperand;
 
-    if (strCutBegin === 0 && strCutEnd === str.length - 1) return String(operationResult);
-    if (strCutBegin === 0) return String(operationResult) + str.substring(strCutEnd + 1);
-    if (strCutEnd === str.length - 1) return str.substring(0, strCutBegin) + String(operationResult);
+    let result;
+    if (strCutBegin === 0 && strCutEnd === str.length - 1){
+        result =  String(operationResult);
+    } else if (strCutBegin === 0){
+        result = String(operationResult) + str.substring(strCutEnd + 1);
+    } else if (strCutEnd === str.length - 1){
+        result = str.substring(0, strCutBegin) + String(operationResult);
+    } else {
+        result = str.substring(0, strCutBegin) + String(operationResult) + str.substring(strCutEnd + 1);
+    }
+    //encrypt the exponent with a minus: "e-" to "ex"
+    if (result.indexOf('e-') > 0){
+        eIndex = result.indexOf('e-');
+        result = result.substr(0, eIndex + 1) + "x" + result.substr(eIndex + 2);
+    }
 
-    return str.substring(0, strCutBegin) + String(operationResult) + str.substring(strCutEnd + 1);
+    return result;
 }
 
 let isBracketsCorrect = (expr) => {
